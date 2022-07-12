@@ -1,7 +1,6 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+namespace App\Api;
+
 class Uploader
 {
     private $filename;    
@@ -26,9 +25,8 @@ class Uploader
             $isZipFile = in_array( $_FILES['file']["type"], $zipTypes );            
     
             if( $isZipFile && $isZipExtension) {
-                $dst_path = __DIR__.'/'.$this->sanitizeFilename($_FILES['file']['name']);                
                 $src_path = $_FILES['file']['tmp_name'];
-                echo 'SRC => '.$src_path.' | DST => '.$dst_path.'<br>';
+                $dst_path = __DIR__.'/'.$this->sanitizeFilename($_FILES['file']['name']);
                 move_uploaded_file($src_path, $dst_path);
                 $this->filename = realpath($dst_path);                
             }
@@ -59,7 +57,7 @@ class Uploader
     function prepareKit()
     {
         echo 'Prepare kit';
-        $zip = new ZipArchive;        
+        $zip = new \ZipArchive;        
         $res = $zip->open($this->filename);
         if (isset($_POST['save_folder'])) {
             $save_folder = $this->dest_folder.'/'.$_POST['save_folder'];            
@@ -68,7 +66,7 @@ class Uploader
             }
         } else {
             $save_folder = $this->dest_folder;            
-        }        
+        }
         if ($res === TRUE) {
             // extract it to the path we determined above
             $zip->extractTo($save_folder);
@@ -83,12 +81,12 @@ class Uploader
 
     static function backHome()
     {
-        header("Location: index.php");
+        header("Location: /");
     }
 }
 
-$uploader = new Uploader;
-$uploader->uploadKit();
-$uploader->prepareKit();
+// $uploader = new Uploader;
+// $uploader->uploadKit();
+// $uploader->prepareKit();
 // Uploader::clean('kits');
 ?>
