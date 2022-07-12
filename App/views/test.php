@@ -1,20 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <?php 
-        // use App\Models\Kit;
-        use Illuminate\Database\Capsule\Manager as Capsule;
+<?php 
+    header("Content-Type: application/json; charset=UTF-8");
+    // use App\Models\Kit;
+    use Illuminate\Database\Capsule\Manager as Capsule;
 
-        $kits = Capsule::table('kits')->get();
+    // Capsule::schema()->create('kits', function($table) {
+    //     $table->increments('id');
+    //     $table->string('name');
+    //     $table->string('location');
+    //     $table->text('code');
+    
+    //     $table->timestamps();
+    // });    
 
-        var_dump($kits);
-
-    ?>
-</body>
-</html>
+    echo json_encode(['kits' => $kits]);
+?>

@@ -1,15 +1,20 @@
 <?php
 namespace App\Api;
 
+use stdClass;
+use App\AppConfig;
+
 class Uploader
 {
     private $filename;    
     private $dest_folder;
+    private $save_folder;
 
-    public function __construct($dest_folder='kits', $save_filename='new')
+    public function __construct($dest_folder='kits', $save_folder='')
     {
-        $this->filename = '';
-        $this->dest_folder = $dest_folder;        
+        $this->filename = '';        
+        $this->dest_folder = $dest_folder;
+        $this->save_folder = $save_folder;
         if (!file_exists($this->dest_folder)) {
             mkdir($this->dest_folder, 0777, true);
         }
@@ -28,9 +33,9 @@ class Uploader
                 $src_path = $_FILES['file']['tmp_name'];
                 $dst_path = __DIR__.'/'.$this->sanitizeFilename($_FILES['file']['name']);
                 move_uploaded_file($src_path, $dst_path);
-                $this->filename = realpath($dst_path);                
+                $this->filename = realpath($dst_path);
             }
-        }
+        }        
     }
 
     public static function clean($dest_folder)
@@ -59,13 +64,9 @@ class Uploader
         echo 'Prepare kit';
         $zip = new \ZipArchive;        
         $res = $zip->open($this->filename);
-        if (isset($_POST['save_folder'])) {
-            $save_folder = $this->dest_folder.'/'.$_POST['save_folder'];            
-            if (!file_exists($save_folder)) {
-                mkdir($save_folder, 0777, true);
-            }
-        } else {
-            $save_folder = $this->dest_folder;            
+        $save_folder = strtolower($this->dest_folder).$this->save_folder.'-'.time();
+        if (!file_exists($save_folder)) {
+            mkdir($save_folder, 0777, true);
         }
         if ($res === TRUE) {
             // extract it to the path we determined above
@@ -73,7 +74,10 @@ class Uploader
             $zip->close();
             unlink($this->filename);
             echo "WOOT! $this->filename extracted to $this->dest_folder";
-            $this->backHome();
+            $result = new stdClass;
+            $result->name = basename($this->save_folder);
+            $result->location = basename($this->dest_folder).strtolower($this->save_folder).'-'.time().'/';
+            return $result;
         } else {
             echo "Doh! I couldn't open $this->filename";
         }

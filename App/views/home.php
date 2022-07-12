@@ -13,6 +13,20 @@ $config = AppConfig::getInstance();
 </head>
 <body>
     <div class="container p-5" id="app">
+        <div style="position: fixed; right: 0; top: 0; width: 320px; background: rgba(0, 2, 4, .8); height: auto; z-index: 99; color: white; font-size: .9rem; overflow-y: auto; padding: .5rem;">
+            <button class="btn-sm btn-info" @click="showKits = !showKits">{{ showKits ? 'Hide' : 'Show' }} kits</button>
+            <div v-show="showKits">
+                <ul class="list-group">
+                    <template v-for="kit in kits.kits" :key="kit.id">
+                    <li class="list-group-item">
+                        <a :href="`${siteURL}${kit.location}${kitName}`" target="_blank">
+                            {{ kit.name }}
+                        </a>
+                    </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
         <h1>Upload HTML Kit (Au format .zip svp)</h1>
         <br>
         <form action="<?= $config->get('api') ?>upload" method="POST" enctype="multipart/form-data">
@@ -45,11 +59,30 @@ $config = AppConfig::getInstance();
     </div>
 
     <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <script>
-        const { createApp } = Vue
+        const { createApp, reactive, onMounted } = Vue
 
         createApp({
+            setup() {
+                const siteURL = 'http://localhost:8020/';
+                let kits = reactive({ kits: {}});
+                function fetchKits() {
+                    axios.get(siteURL + 'api/kits')
+                    .then((response) => {
+                        console.log(response.data.kits);
+                        kits.kits = response.data.kits;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+
+                fetchKits();
+
+                return { kits, siteURL }
+            },
             data() {
                 return {
                     url: "<?= 'http://'.$_SERVER['HTTP_HOST'].'/kupl/kits/' ?>",
@@ -58,7 +91,8 @@ $config = AppConfig::getInstance();
                     code: {
                         input: '',
                         output: ''
-                    }
+                    },
+                    showKits: true
                 }
             },
             computed: {
